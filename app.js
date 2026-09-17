@@ -12,7 +12,7 @@ const STORE_KEY = 'myAssets.mongle';
 const LEGACY_STORE_KEYS = ['myAssets.v4.test'];
 const APP_VERSION_LABEL = '자산일기 몽글이버전';
 /* ───────── 몽글이 이모티콘 (img/*.png, 투명 배경 스티커) ───────── */
-const MG_DIR = 'img/';
+const MG_DIR = ''; // GitHub에 img 폴더 없이 사진 파일이 저장소 맨 위(루트)에 바로 올라간 상태라, 여기서 찾는 경로도 루트로 맞춤
 function mg(name, cls = '', alt = '') { return `<img class="mg ${cls}" src="${MG_DIR}${name}.png" alt="${esc(alt)}"${alt ? '' : ' aria-hidden="true"'} decoding="async">`; }
 /* 분류별 캐릭터: 돈주머니·보물함·국내·해외·부동산·현금코인·자산일기 + 연금은 돼지저금통. 오르면 _up, 내리면 _down */
 const CAT_MG = { '현금성자산': 'pouch', '국내주식': 'domestic', '해외주식': 'overseas', '채권·안전자산': 'treasure', '연금·IRP': 'piggy', '부동산': 'realestate', '암호화폐': 'cash', '원자재': 'treasure', '기타': 'diary' };
@@ -55,28 +55,28 @@ const TX_EMO = { buy: '🛒', sell: '💸', div: '🍯' };
 const RETURN_STATUS = {
   growth: {
     label: '성장 흐름', range: '+5% 이상',
-    img: 'img/total_jackpot.png', alt: '두 팔을 들고 축하하는 몽글이',
+    img: 'total_jackpot.png', alt: '두 팔을 들고 축하하는 몽글이',
     tone: { bg: 'var(--rs-growth-bg)', fg: 'var(--rs-growth-fg)', line: 'var(--rs-growth-line)' },
     desc: '누적 수익률이 +5% 이상입니다. 현재 포트폴리오가 긍정적인 성과 흐름을 보이고 있습니다. 다만 수익 확대에 따라 특정 자산의 비중이 목표 범위를 벗어나지 않았는지 확인해 보세요.',
     points: '목표 자산배분, 자산별 비중 쏠림, 실현·미실현 수익'
   },
   stable: {
     label: '안정 구간', range: '0% 이상 ~ +5% 미만',
-    img: 'img/total_happy.png', alt: '편안하게 웃는 몽글이',
+    img: 'total_happy.png', alt: '편안하게 웃는 몽글이',
     tone: { bg: 'var(--rs-stable-bg)', fg: 'var(--rs-stable-fg)', line: 'var(--rs-stable-line)' },
     desc: '누적 수익률이 0% 이상, +5% 미만입니다. 자산은 플러스 흐름을 유지하고 있으나 시장 변동에 따라 결과가 달라질 수 있는 구간입니다.',
     points: '목표 수익률과의 차이, 정기 투자 계획, 리밸런싱 필요 여부'
   },
   check: {
     label: '점검 구간', range: '-5% 초과 ~ 0% 미만',
-    img: 'img/total_worried.png', alt: '손을 모으고 조마조마한 몽글이',
+    img: 'total_worried.png', alt: '손을 모으고 조마조마한 몽글이',
     tone: { bg: 'var(--rs-check-bg)', fg: 'var(--rs-check-fg)', line: 'var(--rs-check-line)' },
     desc: '누적 수익률이 0% 미만, -5% 초과입니다. 단기 변동일 수 있으므로 성급한 대응보다 투자 기간, 매수 단가, 자산별 비중을 확인해 보세요.',
     points: '시장 전반 하락 여부, 자산별 손실 원인, 투자 기간과 목표'
   },
   manage: {
     label: '관리 필요', range: '-5% 이하',
-    img: 'img/total_sad.png', alt: '눈물을 흘리며 스스로를 토닥이는 몽글이',
+    img: 'total_sad.png', alt: '눈물을 흘리며 스스로를 토닥이는 몽글이',
     tone: { bg: 'var(--rs-manage-bg)', fg: 'var(--rs-manage-fg)', line: 'var(--rs-manage-line)' },
     desc: '누적 수익률이 -5% 이하입니다. 손실 자체보다 원인을 구분하는 것이 우선입니다. 시장 전반 하락인지, 특정 자산의 이슈인지, 목표 비중이 달라졌는지 점검해 보세요.',
     points: '손실 기여 자산, 투자 가설의 유효성, 리밸런싱 또는 대응 기준'

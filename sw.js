@@ -1,10 +1,11 @@
 // 앱 화면 파일과 글꼴을 캐시해서 오프라인에서도 열리게 함. 시세 API는 캐시하지 않음.
-const CACHE = 'asset-diary-mongle-v1.0.1';
+const CACHE = 'asset-diary-mongle-v1.0.2';
 // 같은 GitHub 계정(같은 주소)에 올린 다른 버전 앱의 캐시를 지우지 않도록, 이 앱 이름으로 시작하는 옛 캐시만 정리
 const CACHE_PREFIX = 'asset-diary-mongle-';
+// 몽글이 사진 31장이 img 폴더 없이 저장소 맨 위(루트)에 올라가 있어서, 여기서도 루트 경로로 캐시함(app.js의 MG_DIR과 맞춤)
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
   'icon-192.png', 'icon-512.png', 'apple-touch-icon.png',
-  'img/cash_down.png', 'img/cash_up.png', 'img/diary_down.png', 'img/diary_up.png', 'img/domestic_down.png', 'img/domestic_up.png', 'img/mascot_app_icon.png', 'img/mascot_hi.png', 'img/mascot_main.png', 'img/mood_happy.png', 'img/mood_jackpot.png', 'img/mood_neutral.png', 'img/mood_sad.png', 'img/mood_worried.png', 'img/overseas_down.png', 'img/overseas_up.png', 'img/piggy_happy.png', 'img/piggy_jackpot.png', 'img/piggy_neutral.png', 'img/piggy_sad.png', 'img/piggy_worried.png', 'img/pouch_down.png', 'img/pouch_up.png', 'img/realestate_down.png', 'img/realestate_up.png', 'img/total_happy.png', 'img/total_jackpot.png', 'img/total_sad.png', 'img/total_worried.png', 'img/treasure_down.png', 'img/treasure_up.png'];
+  'cash_down.png', 'cash_up.png', 'diary_down.png', 'diary_up.png', 'domestic_down.png', 'domestic_up.png', 'mascot_app_icon.png', 'mascot_hi.png', 'mascot_main.png', 'mood_happy.png', 'mood_jackpot.png', 'mood_neutral.png', 'mood_sad.png', 'mood_worried.png', 'overseas_down.png', 'overseas_up.png', 'piggy_happy.png', 'piggy_jackpot.png', 'piggy_neutral.png', 'piggy_sad.png', 'piggy_worried.png', 'pouch_down.png', 'pouch_up.png', 'realestate_down.png', 'realestate_up.png', 'total_happy.png', 'total_jackpot.png', 'total_sad.png', 'total_worried.png', 'treasure_down.png', 'treasure_up.png'];
 // 글꼴 + 글자인식(Tesseract) 파일은 한 번 받으면 캐시
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net'];
 
