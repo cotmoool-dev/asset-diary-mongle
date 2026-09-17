@@ -7,24 +7,8 @@
 /* ───────── 상수 ─────────
  * 테스트버전: Perplexity 리뷰 반영판. 실제 데이터와 분리하기 위해 저장 키를 다르게 씀.
  */
-const STORE_KEY = 'myAssets.mongle';
-/* 몽글이버전을 처음 열면 같은 주소에 있던 테스트버전 데이터를 복사해 옴(테스트버전 쪽은 그대로 둠) */
-const LEGACY_STORE_KEYS = ['myAssets.v4.test'];
-const APP_VERSION_LABEL = '자산일기 몽글이버전';
-/* ───────── 몽글이 이모티콘 (img/*.png, 투명 배경 스티커) ───────── */
-const MG_DIR = ''; // GitHub에 img 폴더 없이 사진 파일이 저장소 맨 위(루트)에 바로 올라간 상태라, 여기서 찾는 경로도 루트로 맞춤
-function mg(name, cls = '', alt = '') { return `<img class="mg ${cls}" src="${MG_DIR}${name}.png" alt="${esc(alt)}"${alt ? '' : ' aria-hidden="true"'} decoding="async">`; }
-/* 분류별 캐릭터: 돈주머니·보물함·국내·해외·부동산·현금코인·자산일기 + 연금은 돼지저금통. 오르면 _up, 내리면 _down */
-const CAT_MG = { '현금성자산': 'pouch', '국내주식': 'domestic', '해외주식': 'overseas', '채권·안전자산': 'treasure', '연금·IRP': 'piggy', '부동산': 'realestate', '암호화폐': 'cash', '원자재': 'treasure', '기타': 'diary' };
-function catMgName(c, pl) {
-  const base = CAT_MG[c] || 'diary';
-  if (base === 'piggy') return pl < 0 ? 'piggy_worried' : 'piggy_happy';
-  return `${base}_${pl < 0 ? 'down' : 'up'}`;
-}
-/* 월간 기록 기분(기존 이모지 값 그대로 저장) → 몽글이 기분 이모티콘 */
-const MOOD_MG = { '😆': 'mood_jackpot', '🙂': 'mood_happy', '😐': 'mood_neutral', '😟': 'mood_worried', '😭': 'mood_sad' };
-const MOOD_LABEL = { '😆': '대박', '🙂': '좋아', '😐': '그대로', '😟': '조마조마', '😭': '토닥토닥' };
-function moodMg(m, cls = '') { return MOOD_MG[m] ? mg(MOOD_MG[m], cls, MOOD_LABEL[m]) : E(m || '📝'); }
+const STORE_KEY = 'myAssets.v4.test';
+const APP_VERSION_LABEL = '자산 일기 테스트판 · Perplexity 리뷰 반영';
 /* 리밸런싱 세금·수수료 근사치(설정에서 조정 가능). 실제 세율은 보유기간·공제·상품에 따라 달라요. */
 const DEFAULT_TAX_RATES = {
   '국내주식': 0.18 + 0.015, // 증권거래세 0.18% + 위탁수수료 근사 0.015%
@@ -55,28 +39,28 @@ const TX_EMO = { buy: '🛒', sell: '💸', div: '🍯' };
 const RETURN_STATUS = {
   growth: {
     label: '성장 흐름', range: '+5% 이상',
-    img: 'total_jackpot.png', alt: '두 팔을 들고 축하하는 몽글이',
+    img: 'mood-growth.png', alt: '두 팔을 들고 축하하는 핑크 캐릭터',
     tone: { bg: 'var(--rs-growth-bg)', fg: 'var(--rs-growth-fg)', line: 'var(--rs-growth-line)' },
     desc: '누적 수익률이 +5% 이상입니다. 현재 포트폴리오가 긍정적인 성과 흐름을 보이고 있습니다. 다만 수익 확대에 따라 특정 자산의 비중이 목표 범위를 벗어나지 않았는지 확인해 보세요.',
     points: '목표 자산배분, 자산별 비중 쏠림, 실현·미실현 수익'
   },
   stable: {
     label: '안정 구간', range: '0% 이상 ~ +5% 미만',
-    img: 'total_happy.png', alt: '편안하게 웃는 몽글이',
+    img: 'mood-stable.png', alt: '눈을 감고 편안하게 웃는 피치색 캐릭터',
     tone: { bg: 'var(--rs-stable-bg)', fg: 'var(--rs-stable-fg)', line: 'var(--rs-stable-line)' },
     desc: '누적 수익률이 0% 이상, +5% 미만입니다. 자산은 플러스 흐름을 유지하고 있으나 시장 변동에 따라 결과가 달라질 수 있는 구간입니다.',
     points: '목표 수익률과의 차이, 정기 투자 계획, 리밸런싱 필요 여부'
   },
   check: {
     label: '점검 구간', range: '-5% 초과 ~ 0% 미만',
-    img: 'total_worried.png', alt: '손을 모으고 조마조마한 몽글이',
+    img: 'mood-check.png', alt: '손을 모으고 땀을 흘리며 고민하는 회청색 캐릭터',
     tone: { bg: 'var(--rs-check-bg)', fg: 'var(--rs-check-fg)', line: 'var(--rs-check-line)' },
     desc: '누적 수익률이 0% 미만, -5% 초과입니다. 단기 변동일 수 있으므로 성급한 대응보다 투자 기간, 매수 단가, 자산별 비중을 확인해 보세요.',
     points: '시장 전반 하락 여부, 자산별 손실 원인, 투자 기간과 목표'
   },
   manage: {
     label: '관리 필요', range: '-5% 이하',
-    img: 'total_sad.png', alt: '눈물을 흘리며 스스로를 토닥이는 몽글이',
+    img: 'mood-manage.png', alt: '눈물을 흘리며 스스로를 감싸 안는 블루 캐릭터',
     tone: { bg: 'var(--rs-manage-bg)', fg: 'var(--rs-manage-fg)', line: 'var(--rs-manage-line)' },
     desc: '누적 수익률이 -5% 이하입니다. 손실 자체보다 원인을 구분하는 것이 우선입니다. 시장 전반 하락인지, 특정 자산의 이슈인지, 목표 비중이 달라졌는지 점검해 보세요.',
     points: '손실 기여 자산, 투자 가설의 유효성, 리밸런싱 또는 대응 기준'
@@ -148,6 +132,58 @@ function rememberStockMeta(name, symbol, sector, country) {
   S.settings.stockMeta = S.settings.stockMeta || {};
   S.settings.stockMeta[key] = { sector: sector || '', country: country || '' };
 }
+/* ───────── 연금·IRP 구성 분석용 상수 ─────────
+ * ETF·TDF·펀드 등은 기초자산의 국가·섹터를 신뢰성 있게 나누기 어려워 '상품유형별' 탭을 별도로 둠(요구사항 #7).
+ * 국가 비중은 상장국이 아니라 기초자산·주요 투자대상 국가 기준(요구사항 #8) — 화면에도 그 기준을 짧게 안내함. */
+const PENSION_CLASS = ['주식형', '채권·안전자산', '현금성 자산', '대체자산'];
+const PENSION_COUNTRIES = ['미국', '한국', '선진국', '신흥국', '기타'];
+const PENSION_SECTORS = ['정보기술', '금융', '헬스케어', '산업재', '기타'];
+const PENSION_PRODUCT_TYPES = ['미국주식 ETF', '국내주식 ETF', '글로벌 채권 ETF', 'TDF', '대기자금'];
+/* 이름에 자주 나오는 키워드로 상품유형을 추정 — 근거가 없으면 절대 임의로 정하지 않고 null(→ '미분류') */
+function guessPensionProduct(name) {
+  const n = String(name || '').toUpperCase();
+  if (!n) return null;
+  if (n.includes('TDF')) return 'TDF';
+  if (n.includes('MMF') || n.includes('대기') || n.includes('파킹')) return '대기자금';
+  const isEtf = n.includes('ETF');
+  if (n.includes('채권') || n.includes('BOND') || n.includes('AGG') || n.includes('BND')) {
+    if (n.includes('글로벌') || n.includes('GLOBAL') || n.includes('AGG') || n.includes('BND')) return '글로벌 채권 ETF';
+  }
+  if (isEtf) {
+    if (n.includes('S&P') || n.includes('SP500') || n.includes('나스닥') || n.includes('NASDAQ') || n.includes('미국')) return '미국주식 ETF';
+    if (n.includes('KOSPI') || n.includes('코스피') || n.includes('국내')) return '국내주식 ETF';
+  }
+  return null;
+}
+/* 분류(라벨)마다 항상 같은 색을 쓰기 위한 고정 매핑 — 여기 없는 라벨(기타 국가·섹터 등)은 SUBCHART_COLORS를 순서대로 돌려씀(요구사항 #10) */
+const COMP_LABEL_COLOR = {
+  '미국': '#2f6fed',           // 블루
+  '한국': '#e2572b',           // 레드·오렌지
+  '채권·안전자산': '#5b6b82',  // 네이비·그레이
+  '현금성 자산': '#3fae6a',    // 그린
+  '미분류': '#9aa3af',         // 그레이
+  '기타': '#c9ced6',           // 연한 그레이
+};
+/* 자산군별 구성 분석 탭 설정 — 배열의 첫 항목이 기본 선택 탭(요구사항 #5) */
+const COMP_TABS = {
+  '국내주식': [
+    { key: 'sector', label: '섹터별', dim: '섹터', emo: '🏷️', group: a => a.sector || null },
+    { key: 'country', label: '국가별', dim: '국가', emo: '🌍', group: a => a.country || null },
+  ],
+  '해외주식': [
+    { key: 'country', label: '국가별', dim: '국가', emo: '🌍', group: a => a.country || null },
+    { key: 'sector', label: '섹터별', dim: '섹터', emo: '🏷️', group: a => a.sector || null },
+  ],
+  '연금·IRP': [
+    { key: 'class', label: '자산군별', dim: '자산군', emo: '🧺', group: a => a.penClass || null },
+    { key: 'country', label: '국가별', dim: '국가', emo: '🌍', group: a => a.penCountry || null },
+    { key: 'sector', label: '섹터별', dim: '섹터', emo: '🏷️', group: a => a.penSector || null },
+    { key: 'product', label: '상품유형별', dim: '상품유형', emo: '🧩', group: a => a.penProduct || null },
+  ],
+  '암호화폐': [
+    { key: 'name', label: '종목별', dim: '종목', emo: '🪙', group: a => a.name || null },
+  ],
+};
 const TX_TYPES = { buy: '매수', sell: '매도', div: '배당' };
 const TITLES = { home: '자산 일기', assets: '내 보물함', book: '가계부', tx: '거래 일기', rebal: '균형 맞추기', settings: '설정' };
 const BOOK = {
@@ -167,8 +203,6 @@ const DEFAULT_MODEL = 'claude-sonnet-5';
 /* 목표 유형(목적 태그)별 기본 아이콘 — 새 목표를 만들 때 이 기본값이 먼저 선택되고, 목표 화면에서 다른 아이콘으로 바꿀 수 있어요 */
 const GOAL_DEFAULT_ICON = { '주거자금': '🏠', '사업자금': '💼', '연금': '🌱', '비상금': '☂️', '기타': '🎯' };
 const GOAL_ICONS = ['🏠', '🌱', '☂️', '🎯', '💼', '🎓', '✈️', '🚗', '💍', '👶', '🐾', '🎁'];
-/* v5(금융대시보드판) 백업을 가져와도 목표 아이콘이 유지되도록, v5의 아이콘 이름을 이모지로 되돌리는 표 */
-const GOAL_ICON_FROM_NAME = { home: '🏠', sprout: '🌱', umbrella: '☂️', target: '🎯', briefcase: '💼', graduation: '🎓', plane: '✈️', car: '🚗', heart: '💍', users: '👶', flag: '🐾', gift: '🎁' };
 function goalIcon(g) { return (g && g.icon) || GOAL_DEFAULT_ICON[g && g.purpose] || '🎯'; }
 /* ───────── 상태 ───────── */
 function defaultState() {
@@ -199,15 +233,12 @@ function defaultState() {
 }
 
 let S = load();
-let ui = { tab: 'home', txFilter: 'all', open: {}, tradeHist: {}, rebalMode: 'add', extra: 0, bookMonth: '', perfPeriod: 'month', gapRelative: false, subChartView: {}, returnGuideOpen: false };
+let ui = { tab: 'home', txFilter: 'all', open: {}, tradeHist: {}, rebalMode: 'add', extra: 0, bookMonth: '', perfPeriod: 'month', gapRelative: false, compOpen: {}, compTab: {}, returnGuideOpen: false };
 
 function load() {
   try {
-    let raw = localStorage.getItem(STORE_KEY);
-    if (!raw) {
-      for (const k of LEGACY_STORE_KEYS) { raw = localStorage.getItem(k); if (raw) break; }
-      if (!raw) return defaultState();
-    }
+    const raw = localStorage.getItem(STORE_KEY);
+    if (!raw) return defaultState();
     return migrate(JSON.parse(raw));
   } catch (e) {
     /* 안전장치: 저장 데이터를 읽다가 오류가 나면, 빈 상태로 덮어쓰기 전에 원본을 별도 키에 보관해 둠 */
@@ -255,7 +286,7 @@ function normGoal(g) {
     id: g.id || uid(),
     name: g.name || '목표',
     purpose: PURPOSES.includes(g.purpose) ? g.purpose : '기타',
-    icon: GOAL_ICONS.includes(g.icon) ? g.icon : (GOAL_ICON_FROM_NAME[g.icon] || ''),
+    icon: GOAL_ICONS.includes(g.icon) ? g.icon : '',
     cats: Array.isArray(g.cats) ? g.cats.filter(c => CATS.includes(c)) : [],
     date: g.date || '',
     amount: num(g.amount),
@@ -290,6 +321,11 @@ function normAsset(a) {
     fxExposure: ['exposed', 'hedged'].includes(a.fxExposure) ? a.fxExposure : '',
     sector: SECTORS.includes(a.sector) ? a.sector : '',
     country: COUNTRIES.includes(a.country) ? a.country : '',
+    penClass: PENSION_CLASS.includes(a.penClass) ? a.penClass : '',
+    penCountry: PENSION_COUNTRIES.includes(a.penCountry) ? a.penCountry : '',
+    penSector: PENSION_SECTORS.includes(a.penSector) ? a.penSector : '',
+    penProduct: PENSION_PRODUCT_TYPES.includes(a.penProduct) ? a.penProduct : '',
+    penProductEstimated: !!a.penProductEstimated && PENSION_PRODUCT_TYPES.includes(a.penProduct),
     components: Array.isArray(a.components) ? a.components.map(c => ({ name: c.name || '', pct: num(c.pct) })) : [],
     memo: a.memo || '',
     dep: normDep(a.dep)
@@ -537,7 +573,7 @@ function returnStatusBlock(T) {
 function viewHome() {
   const T = totals();
   if (!S.assets.length) {
-    return `<div class="card tape empty">${mg('mascot_hi', 'big-mg', '인사하는 몽글이')}<b>새 자산 일기장이에요</b>첫 페이지를 채워볼까요?<br>보물함에 예금, 주식, 코인을 하나씩 넣어 주세요.<div style="margin-top:16px"><button class="btn primary" data-action="go" data-tab="assets">👛 보물함 채우러 가기</button></div></div>`;
+    return `<div class="card tape empty"><span class="big-emo emo">📔</span><b>새 자산 일기장이에요</b>첫 페이지를 채워볼까요?<br>보물함에 예금, 주식, 코인을 하나씩 넣어 주세요.<div style="margin-top:16px"><button class="btn primary" data-action="go" data-tab="assets">👛 보물함 채우러 가기</button></div></div>`;
   }
   const prev = prevSnapshot();
   let deltaHtml = '', momPct = null;
@@ -555,13 +591,8 @@ function viewHome() {
   ${todayActionCard(T)}
   ${warn.map(([e, w]) => `<div class="banner warn no-print">${E(e)}<span>${esc(w)}</span></div>`).join('')}
   <section class="card hero tape">
-    <div class="hero-top">
-      <div class="hero-main">
-        <div class="label">✍️ 오늘의 총자산</div>
-        <div class="big num">${won(T.value)}</div>
-      </div>
-      ${(() => { const k = returnStatusKey(T.cost > 0 ? T.unrealPct : null); return k ? `<img class="hero-mg" src="${RETURN_STATUS[k].img}" alt="${esc(RETURN_STATUS[k].alt)} (${RETURN_STATUS[k].label})">` : mg('mascot_main', 'hero-mg', '몽글이'); })()}
-    </div>
+    <div class="label">✍️ 오늘의 총자산</div>
+    <div class="big num">${won(T.value)}</div>
     <div class="row num">${deltaHtml}</div>
     ${returnStatusBlock(T)}
   </section>
@@ -699,22 +730,66 @@ function groupDonut(rows, centerEmo) {
     `<div><i style="background:${r.color || SUBCHART_COLORS[i % SUBCHART_COLORS.length]}"></i><span>${esc(r.label)}</span><b class="num">${pct(total > 0 ? r.value / total * 100 : 0)}</b></div>`).join('');
   return `<div class="donut-wrap"><svg class="donut" style="width:132px;height:132px" viewBox="0 0 132 132" role="img"><circle r="${R}" cx="66" cy="66" fill="none" stroke="var(--card2)" stroke-width="19"/>${segs}<text x="66" y="74" text-anchor="middle" font-size="24">${centerEmo}</text></svg><div class="legend">${legend}</div></div>`;
 }
-/* 국내주식·해외주식 섹션 아래에 붙는 "섹터별 보기 / 국가별 보기" 토글 + 도넛. 섹터·국가 정보가 없는 종목은 "미분류"로 묶고, 이름을 눌러 바로 등록 화면으로 연결함 */
-function sectorCountrySection(cat, list) {
-  const view = ui.subChartView[cat] === 'country' ? 'country' : 'sector';
-  const key = view === 'sector' ? 'sector' : 'country';
+/* 같은 라벨엔 항상 같은 색을 쓰기 위한 색상 결정 — 고정 매핑 우선, 없으면 SUBCHART_COLORS를 순서대로(요구사항 #10) */
+function compColor(label, idx) { return COMP_LABEL_COLOR[label] || SUBCHART_COLORS[idx % SUBCHART_COLORS.length]; }
+/* 구성 분석용 그룹핑 + 임계치 로직(요구사항 #3·#4).
+ * groupKeyFn(asset)이 falsy를 반환하면 '미분류'로 따로 모으고(도넛에 합쳐 넣지 않고 별도 행+안내문으로), 나머지는 값 기준으로 묶는다.
+ * 보유 종목 수(list.length) 기준: 1개면 도넛 없이 요약 문장(mode:'single'), 2~4개면 전체 그룹을 도넛으로, 5개 이상이면 상위 5개 그룹 + '기타'로 묶는다. */
+function buildCompositionRows(list, groupKeyFn) {
   const groups = {};
-  list.forEach(a => { const k = a[key] || '미분류'; groups[k] = (groups[k] || 0) + valueOf(a); });
-  const rows = Object.entries(groups).sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value, color: label === '미분류' ? 'var(--line)' : undefined }));
-  const unclassified = list.filter(a => !a[key]);
-  return `<div class="subchart" style="margin:6px 0 14px">
-    <div class="seg" style="margin:0 0 8px">
-      <button type="button" data-action="subchart-view" data-cat="${cat}" data-v="sector" class="${view === 'sector' ? 'on' : ''}">🏷️ 섹터별 보기</button>
-      <button type="button" data-action="subchart-view" data-cat="${cat}" data-v="country" class="${view === 'country' ? 'on' : ''}">🌍 국가별 보기</button>
-    </div>
-    ${groupDonut(rows, view === 'sector' ? '🏷️' : '🌍')}
-    ${unclassified.length ? `<p class="small faint" style="margin:8px 2px 0">🌱 미분류 종목 ${unclassified.length}개는 ${view === 'sector' ? '섹터' : '국가'} 정보가 없어요 — 눌러서 채워주세요: ${unclassified.map(a => `<button type="button" class="link-btn" style="font-size:12.5px" data-action="edit-asset" data-id="${a.id}">${esc(a.name)}</button>`).join(', ')}</p>` : ''}
-  </div>`;
+  const unclassifiedAssets = [];
+  list.forEach(a => {
+    const k = groupKeyFn(a);
+    if (!k) unclassifiedAssets.push(a);
+    else groups[k] = (groups[k] || 0) + valueOf(a);
+  });
+  if (list.length === 1) {
+    const only = list[0];
+    const k = groupKeyFn(only);
+    return { mode: 'single', label: k || '미분류', asset: only, unclassifiedAssets };
+  }
+  let rows = Object.entries(groups).sort((a, b) => b[1] - a[1]).map(([label, value]) => ({ label, value }));
+  if (list.length >= 5 && rows.length > 5) {
+    const top = rows.slice(0, 5);
+    const restSum = rows.slice(5).reduce((s, r) => s + r.value, 0);
+    rows = restSum > 0 ? [...top, { label: '기타', value: restSum }] : top;
+  }
+  if (unclassifiedAssets.length) rows.push({ label: '미분류', value: unclassifiedAssets.reduce((s, a) => s + valueOf(a), 0) });
+  return { mode: 'donut', rows, unclassifiedAssets };
+}
+/* 연금·IRP 상품유형 탭에서, 이름으로 '추정'한 값이 섞여있으면 어떤 상품유형에 추정치가 포함됐는지 짧게 안내(요구사항 #7) */
+function pensionEstimatedNote(list) {
+  const est = new Set();
+  list.forEach(a => { if (a.penProductEstimated && a.penProduct) est.add(a.penProduct); });
+  if (!est.size) return '';
+  return `<p class="small faint" style="margin:6px 2px 0">🔍 ${[...est].map(esc).join(', ')}은(는) 종목명으로 추정한 값이 포함돼 있어요(추정)</p>`;
+}
+/* 자산군 카드 아래 '구성 분석 보기' 아코디언 — 접혀있을 땐 버튼만, 펼치면 탭(있으면) + 도넛 또는 요약 문장 + 미분류 안내 + (국가 탭이면) 산정 기준 문구를 보여줌 */
+function compositionAccordion(cat, list) {
+  const tabs = COMP_TABS[cat];
+  if (!tabs || !tabs.length || !list.length) return '';
+  const open = !!ui.compOpen[cat];
+  const toggleBtn = `<button type="button" class="btn block comp-toggle" data-action="comp-toggle" data-cat="${cat}" aria-expanded="${open}">${open ? '구성 분석 접기 ▲' : '구성 분석 보기 ▼'}</button>`;
+  if (!open) return toggleBtn;
+  const tabKey = ui.compTab[cat] || tabs[0].key;
+  const tab = tabs.find(t => t.key === tabKey) || tabs[0];
+  const result = buildCompositionRows(list, tab.group);
+  const tabSwitcher = tabs.length > 1 ? `<div class="seg" style="margin:0 0 10px">${tabs.map(t => `<button type="button" data-action="comp-tab" data-cat="${cat}" data-k="${t.key}" class="${t.key === tab.key ? 'on' : ''}">${esc(t.label)}</button>`).join('')}</div>` : '';
+  let body;
+  if (result.mode === 'single') {
+    const est = cat === '연금·IRP' && tab.key === 'product' && result.asset.penProductEstimated ? ' (추정)' : '';
+    body = `<p class="small muted" style="margin:4px 2px 2px">${tab.dim}: ${esc(result.label)}${est} ${pct(100)}</p>
+      <p class="small faint" style="margin:2px 2px 10px">종목이 2개 이상이면 구성 차트가 표시됩니다.</p>`;
+  } else {
+    const rows = result.rows.map((r, i) => ({ label: r.label, value: r.value, color: compColor(r.label, i) }));
+    body = groupDonut(rows, tab.emo);
+  }
+  const unclassNote = result.unclassifiedAssets.length
+    ? `<p class="small faint" style="margin:8px 2px 0">🌱 미분류 ${result.unclassifiedAssets.length}건 · ${won(result.unclassifiedAssets.reduce((s, a) => s + valueOf(a), 0))} — 눌러서 채워주세요: ${result.unclassifiedAssets.map(a => `<button type="button" class="link-btn" style="font-size:12.5px" data-action="edit-asset" data-id="${a.id}">${esc(a.name)}</button>`).join(', ')}</p>`
+    : '';
+  const countryFootnote = tab.key === 'country' ? `<p class="small faint" style="margin:6px 2px 0">🌍 국가 비중은 기초자산의 주요 투자국 기준입니다.</p>` : '';
+  const estimatedNote = (cat === '연금·IRP' && tab.key === 'product') ? pensionEstimatedNote(list) : '';
+  return `${toggleBtn}<div class="subchart" style="margin:10px 0 14px">${tabSwitcher}${body}${unclassNote}${countryFootnote}${estimatedNote}</div>`;
 }
 
 /* 보유 자산이 아예 없는 분류는 "부족"으로 겁주지 않고 'empty'(미보유)로 따로 분리해서 표시함.
@@ -780,23 +855,21 @@ function monthsCard(T) {
     ${has ? `<div class="diary" style="margin-top:14px">${
       [...S.snapshots].sort((a, b) => b.month.localeCompare(a.month)).slice(0, 12).map((s, i, arr) => {
         const p = arr[i + 1]; const d = p ? s.total - p.total : 0;
-        return `<button class="entry" style="border:0;text-align:left;width:100%" data-action="edit-snap" data-m="${s.month}">${moodMg(s.mood, 'mg-entry')}<div style="min-width:0"><div class="when">${Number(s.month.slice(0, 4))}년 ${Number(s.month.slice(5))}월의 일기</div><div class="note">${s.note ? esc(s.note) : '<span class="faint">한 줄 메모 없음</span>'}</div></div><div class="amt num">${wonShort(s.total)}<div class="small ${cls(d)}">${p ? signed(d, wonShort) : '첫 기록 ✨'}</div></div></button>`; }).join('')
+        return `<button class="entry" style="border:0;text-align:left;width:100%" data-action="edit-snap" data-m="${s.month}">${E(s.mood || '📝')}<div style="min-width:0"><div class="when">${Number(s.month.slice(0, 4))}년 ${Number(s.month.slice(5))}월의 일기</div><div class="note">${s.note ? esc(s.note) : '<span class="faint">한 줄 메모 없음</span>'}</div></div><div class="amt num">${wonShort(s.total)}<div class="small ${cls(d)}">${p ? signed(d, wonShort) : '첫 기록 ✨'}</div></div></button>`; }).join('')
     }</div>` : `<p class="hand faint" style="margin:10px 0 0">매달 한 번 📸 일기를 쓰면 여기에 차곡차곡 쌓여요</p>`}
   </section>`;
 }
 
 /* 자산 */
 function viewAssets() {
-  if (!S.assets.length) return `<div class="card tape empty">${mg('treasure_up', 'big-mg')}<b>보물함이 텅 비었어요</b>오른쪽 아래 ✏️ 버튼으로 예금, 주식, 연금, 부동산, 코인을 넣어 주세요.</div>`;
+  if (!S.assets.length) return `<div class="card tape empty"><span class="big-emo emo">👛</span><b>보물함이 텅 비었어요</b>오른쪽 아래 ✏️ 버튼으로 예금, 주식, 연금, 부동산, 코인을 넣어 주세요.</div>`;
   const T = totals();
   const capBtn = `<button class="btn block capture-btn" data-action="capture">📷 증권앱 캡처로 시세 반영하기</button>`;
   return asOfLine() + capBtn + savingsCard(false) + CATS.filter(c => S.assets.some(a => a.cat === c)).map(c => {
     const list = S.assets.filter(a => a.cat === c).sort((a, b) => valueOf(b) - valueOf(a));
-    const isStockCat = c === '국내주식' || c === '해외주식';
-    const catPl = list.reduce((s, a) => s + valueOf(a) - costOf(a), 0);
-    return `<div class="group-head"><span class="with-mg">${mg(catMgName(c, catPl), 'mg-head')}${c}</span><span class="num">${won(T.byCat[c])}</span></div>
+    return `<div class="group-head"><span>${E(CAT_EMO[c])} ${c}</span><span class="num">${won(T.byCat[c])}</span></div>
     <div class="list">${list.map(assetItem).join('')}</div>
-    ${isStockCat && list.length ? sectorCountrySection(c, list) : ''}`;
+    ${compositionAccordion(c, list)}`;
   }).join('') + `<p class="hand faint" style="margin:12px 6px">콕 누르면 고칠 수 있어요 · 오르면 빨강(▲), 내리면 파랑(▼)</p>`;
 }
 /* 기록 피로도 줄이기: 자동 시세·예적금이 아닌 "직접 입력" 자산만 전체 수정폼 없이 값 하나만 빠르게 고칠 수 있게 함 */
@@ -849,7 +922,7 @@ function assetItem(a) {
       : `<div class="sub ${cls(pl)}">${arrow(pl)} ${signed(pl, wonShort)} (${signed(plp, x => pct(x))})</div>`)
     : '<div class="sub faint">—</div>';
   return `<button class="item" data-action="edit-asset" data-id="${a.id}">
-      <span class="bubble mg-bubble" style="background:${soft(catColor(a.cat))}">${mg(catMgName(a.cat, pl))}</span>
+      <span class="bubble emo" style="background:${soft(catColor(a.cat))}">${CAT_EMO[a.cat]}</span>
       <span class="main"><div class="t">${esc(a.name)}</div><div class="sub">${esc(sub)}</div></span>
       <span class="right num"><div class="t">${valueLine}</div>${plLine}</span>
     </button>
@@ -957,7 +1030,7 @@ function viewTx() {
     <p class="small muted" style="margin:0">첫 매도나 배당을 기록하면 이곳에 실현손익·배당 현황이 나타나요.</p>
   </section>`;
   const list = S.txs.filter(t => f === 'all' || t.type === f).sort((a, b) => (b.date || '').localeCompare(a.date || '') || (b.created || 0) - (a.created || 0));
-  if (!S.txs.length) return asOfLine() + summary + `<div class="card tape empty">${mg('diary_up', 'big-mg')}<b>아직 거래 일기가 없어요</b>✏️ 버튼으로 🛒 매수 · 💸 매도 · 🍯 배당을 적으면<br>수량이랑 평균단가가 알아서 바뀌어요.</div>`;
+  if (!S.txs.length) return asOfLine() + summary + `<div class="card tape empty"><span class="big-emo emo">📒</span><b>아직 거래 일기가 없어요</b>✏️ 버튼으로 🛒 매수 · 💸 매도 · 🍯 배당을 적으면<br>수량이랑 평균단가가 알아서 바뀌어요.</div>`;
   return asOfLine() + perfCard(T) + summary + seg + (list.length ? `<div class="list">${list.map(txItem).join('')}</div>` : `<p class="hand faint" style="text-align:center">여기엔 아직 아무것도 없어요 🍃</p>`);
 }
 function daysSince(dateStr) { return Math.floor((Date.now() - new Date(dateStr + 'T00:00:00').getTime()) / 864e5); }
@@ -1018,7 +1091,7 @@ function viewRebal() {
     <div class="sumline"><span class="small muted">허용 오차 (±%p)</span><input class="input num" style="width:92px;padding:8px 10px;text-align:right" inputmode="decimal" data-band value="${S.settings.band}"></div>
   </section>`;
 
-  if (!S.assets.length) return targetsCard + `<div class="card tape empty">${mg('mascot_main', 'big-mg')}<b>보물함부터 채워 주세요</b>그러면 목표랑 얼마나 차이 나는지 계산해 줄게요.</div>`;
+  if (!S.assets.length) return targetsCard + `<div class="card tape empty"><span class="big-emo emo">⚖️</span><b>보물함부터 채워 주세요</b>그러면 목표랑 얼마나 차이 나는지 계산해 줄게요.</div>`;
 
   const sortedRows = rows.slice().sort((a, b) => (a.status === 'empty') - (b.status === 'empty'));
   const gapTable = `<section class="card tape">
@@ -1129,7 +1202,7 @@ function savingsCard(compact) {
   const sumPaid = list.reduce((s, x) => s + x.di.paid, 0), sumMat = list.reduce((s, x) => s + x.di.maturity, 0), sumInt = list.reduce((s, x) => s + x.di.afterTax, 0);
   const rows = (compact ? list.filter(x => x.di.dday >= 0).slice(0, 3) : list).map(({ a, di }) => `
     <button class="dep-row" data-action="edit-asset" data-id="${a.id}">
-      <div class="dep-top"><span class="t with-mg">${mg(di.saving ? 'piggy_happy' : 'pouch_up', 'mg-inline')}${esc(a.name)}</span><span class="pill ${di.dday <= 30 && di.dday >= 0 ? 'high' : 'ok'}">${ddayLabel(di.dday)}</span></div>
+      <div class="dep-top"><span class="t">${di.saving ? '🐷' : '🏦'} ${esc(a.name)}</span><span class="pill ${di.dday <= 30 && di.dday >= 0 ? 'high' : 'ok'}">${ddayLabel(di.dday)}</span></div>
       <div class="dep-mid small muted"><span>${di.saving ? `월 ${wonShort(a.dep.monthly)} 적금` : '예금'} · 연 ${a.dep.rate}% ${a.dep.interest === 'compound' ? '월복리' : '단리'}</span><span>${esc(a.dep.end)} 만기</span></div>
       <div class="progress thin"><div style="width:${di.progress}%"></div></div>
       <div class="dep-bot"><span class="small muted">지금까지 ${wonShort(di.paid)}${di.hasManual ? ' ✏️' : ''}</span><span>만기 받을 돈 <b class="num">${won(di.maturity)}</b></span></div>
@@ -1274,7 +1347,7 @@ function viewBook() {
   const bRate = budget > 0 ? r.variable / budget * 100 : 0;
   const budgetCard = `<section class="card tape t3">
     <h3>🛍️ 변동비 예산 <button class="link-btn" style="font-size:14px" data-action="book-budget">${budget ? '고치기' : '정하기'}</button></h3>
-    ${budget ? `<div class="num" style="display:flex;justify-content:space-between;font-size:14px"><span class="hand with-mg">${mg(bRate > 100 ? 'piggy_sad' : bRate > 80 ? 'piggy_worried' : 'piggy_happy', 'mg-inline')}${bRate > 100 ? '예산 초과!' : bRate > 80 ? '조금만 아껴요' : '잘하고 있어요'}</span><span class="muted">${wonShort(r.variable)} / ${wonShort(budget)}</span></div>
+    ${budget ? `<div class="num" style="display:flex;justify-content:space-between;font-size:14px"><span class="hand">${bRate > 100 ? '🙀 예산 초과!' : bRate > 80 ? '🥺 조금만 아껴요' : '😊 잘하고 있어요'}</span><span class="muted">${wonShort(r.variable)} / ${wonShort(budget)}</span></div>
       <div class="progress ${bRate > 100 ? 'over' : ''}"><div style="width:${Math.min(100, bRate)}%"></div></div>
       <div class="small muted">${bRate <= 100 ? `남은 예산 <b class="num">${won(budget - r.variable)}</b>` : `<span class="up">${won(r.variable - budget)} 넘었어요</span>`}</div>`
       : `<p class="small muted" style="margin:0">한 달 변동비(식비·쇼핑 등) 예산을 정하면 얼마나 썼는지 보여줄게요.</p>`}
@@ -1301,7 +1374,7 @@ function viewBook() {
     const dt = new Date(d); const dayIn = es.filter(e => e.group === 'income').reduce((s, e) => s + e.amount, 0), dayOut = es.filter(e => e.group !== 'income').reduce((s, e) => s + e.amount, 0);
     return `<div class="group-head"><span class="hand">${dt.getDate()}일 ${'일월화수목금토'[dt.getDay()]}요일</span><span class="num small">${dayIn ? `<span class="up">+${wonShort(dayIn)}</span> ` : ''}${dayOut ? `−${wonShort(dayOut)}` : ''}</span></div>
     <div class="list">${es.map(e => `<button class="item" data-action="book-edit" data-id="${e.id}"><span class="bubble emo" style="background:${soft(BOOK[e.group].color)}">${bookEmo(e.group, e.cat)}</span><span class="main"><div class="t">${esc(e.memo || e.cat)}</div><div class="sub">${BOOK[e.group].label} · ${esc(e.cat)}${e.recurId ? ' · 🔁' : ''}</div></span><span class="right num"><div class="t ${e.group === 'income' ? 'up' : ''}">${e.group === 'income' ? '+' : '−'}${won(e.amount)}</div></span></button>`).join('')}</div>`;
-  }).join('') : `<div class="card tape empty">${mg('piggy_neutral', 'big-mg')}<b>${mm}월 가계부가 비어 있어요</b>✏️ 버튼으로 수입·지출을 적어 보세요.<br>월세·통신비 같은 건 “매달 반복”으로 한 번만 등록하면 편해요.</div>`;
+  }).join('') : `<div class="card tape empty"><span class="big-emo emo">💰</span><b>${mm}월 가계부가 비어 있어요</b>✏️ 버튼으로 수입·지출을 적어 보세요.<br>월세·통신비 같은 건 “매달 반복”으로 한 번만 등록하면 편해요.</div>`;
   const recur = S.book.recurring.length ? `<section class="card">
     <h3>🔁 매달 반복 <small>나가는 돈 ${wonShort(S.book.recurring.filter(x => x.group !== 'income').reduce((s, x) => s + x.amount, 0))} 나가요</small></h3>
     ${S.book.recurring.slice().sort((a, b) => a.day - b.day).map(x => `<div class="recur-row"><span>${E(bookEmo(x.group, x.cat))} <b>${esc(x.memo || x.cat)}</b> <span class="small faint">매달 ${x.day}일</span></span><span class="num ${x.group === 'income' ? 'up' : ''}">${x.group === 'income' ? '+' : '−'}${wonShort(x.amount)} <button class="x-btn" data-action="book-del-recur" data-id="${x.id}" aria-label="반복 해제">✕</button></span></div>`).join('')}
@@ -1744,6 +1817,18 @@ function assetForm(a) {
         <p class="hint">예적금은 평가금액·원금이 “지금까지 넣은 돈”으로 자동 계산돼요.</p>
       </div>
     </div>
+    <div class="field" id="pensionWrap" ${a.cat === '연금·IRP' ? '' : 'hidden'}>
+      <span>연금·IRP 구성 분류 (선택)</span>
+      <div class="row2">
+        <label class="field"><span>자산군</span><select class="input" id="f_penclass"><option value="">미분류</option>${opts(PENSION_CLASS, a.penClass)}</select></label>
+        <label class="field"><span>국가</span><select class="input" id="f_pencountry"><option value="">미분류</option>${opts(PENSION_COUNTRIES, a.penCountry)}</select></label>
+      </div>
+      <div class="row2">
+        <label class="field"><span>섹터</span><select class="input" id="f_pensector"><option value="">미분류</option>${opts(PENSION_SECTORS, a.penSector)}</select></label>
+        <label class="field"><span>상품유형${a.penProductEstimated ? ' <small class="faint">(추정)</small>' : ''}</span><select class="input" id="f_penproduct" data-auto="${a.penProductEstimated ? esc(a.penProduct) : ''}"><option value="">미분류</option>${opts(PENSION_PRODUCT_TYPES, a.penProduct)}</select></label>
+      </div>
+      <p class="hint">ETF·TDF·펀드처럼 기초자산의 국가·섹터를 정확히 나누기 어려운 상품은 '상품유형'만 골라도 괜찮아요. 이름에 TDF·ETF 등이 있으면 상품유형을 추정해서 자동으로 채워드려요(추정 표시가 붙어요) — 정확한 값을 알면 직접 골라 주세요. 국가는 상장국이 아니라 기초자산의 주요 투자대상 국가 기준이에요.</p>
+    </div>
     <div class="field"><span>구성 (선택) — 예: 연금계좌 안의 S&P500 60%, 나스닥 40%</span>
       <div id="compList">${a.components.map(compRow).join('')}</div>
       <button type="button" class="btn sm" id="addComp">🧺 구성 추가</button>
@@ -1773,8 +1858,17 @@ function assetForm(a) {
       isResidence: catVal === '부동산' && !!$sheetBody.querySelector('#f_residence')?.checked,
       fxExposure: catVal === '해외주식' ? (val('f_fxexp') || '') : '',
       sector: (catVal === '국내주식' || catVal === '해외주식') ? (val('f_sector') || '') : '',
-      country: (catVal === '국내주식' || catVal === '해외주식') ? (val('f_country') || '') : ''
+      country: (catVal === '국내주식' || catVal === '해외주식') ? (val('f_country') || '') : '',
+      penClass: catVal === '연금·IRP' ? (val('f_penclass') || '') : '',
+      penCountry: catVal === '연금·IRP' ? (val('f_pencountry') || '') : '',
+      penSector: catVal === '연금·IRP' ? (val('f_pensector') || '') : '',
+      penProduct: catVal === '연금·IRP' ? (val('f_penproduct') || '') : '',
+      penProductEstimated: false
     });
+    if (catVal === '연금·IRP') {
+      const penProductEl = $sheetBody.querySelector('#f_penproduct');
+      next.penProductEstimated = !!(penProductEl && next.penProduct && penProductEl.dataset.auto === next.penProduct && penProductEl.dataset.manual !== '1');
+    }
     if ((catVal === '국내주식' || catVal === '해외주식') && (next.sector || next.country)) rememberStockMeta(next.name, next.symbol, next.sector, next.country);
     if (mode === 'amount' && next.dep.kind !== 'none') {
       if (!next.dep.start || !next.dep.end || next.dep.end <= next.dep.start) { toast('가입일과 만기일을 확인해 주세요'); return false; }
@@ -1840,7 +1934,8 @@ function assetForm(a) {
     syncGoldUI();
   });
   $sheetBody.querySelector('#f_symbol').addEventListener('change', () => { if (val('f_src') === 'coingecko') fetchCoinNow(true); autoFillSectorCountry(); });
-  $sheetBody.querySelector('#f_name').addEventListener('change', autoFillSectorCountry);
+  $sheetBody.querySelector('#f_name').addEventListener('change', () => { autoFillSectorCountry(); autoFillPensionProduct(); });
+  $sheetBody.querySelector('#f_penproduct')?.addEventListener('change', e => { e.target.dataset.manual = '1'; });
   $sheetBody.querySelector('#f_priceFetch').addEventListener('click', () => fetchCoinNow(false));
   $sheetBody.querySelector('#f_priceManual').addEventListener('change', e => {
     $sheetBody.querySelector('#f_price').readOnly = val('f_src') === 'coingecko' && !e.target.checked;
@@ -1905,6 +2000,10 @@ function syncGoldUI() {
   if (scWrap) scWrap.hidden = !isStock;
   if (scHint) scHint.hidden = !isStock;
   if (isStock) autoFillSectorCountry();
+  const isPension = cat === '연금·IRP';
+  const penWrap = $sheetBody.querySelector('#pensionWrap');
+  if (penWrap) penWrap.hidden = !isPension;
+  if (isPension) autoFillPensionProduct();
 }
 /* 이름·티커가 바뀔 때마다 섹터·국가 자동 매칭을 시도함 — 사용자가 이미 직접 고른 값은 덮어쓰지 않음 */
 function autoFillSectorCountry() {
@@ -1915,6 +2014,15 @@ function autoFillSectorCountry() {
   if (!meta) return;
   if (meta.sector) sectorEl.value = meta.sector;
   if (meta.country) countryEl.value = meta.country;
+}
+/* 연금·IRP 상품명으로 상품유형을 추정해 '비어있을 때만' 채움 — 사용자가 이미 고른 값은 절대 덮어쓰지 않고, 채운 값은 data-auto에 남겨서 저장 시 '추정' 여부를 판단함 */
+function autoFillPensionProduct() {
+  const el = $sheetBody.querySelector('#f_penproduct');
+  if (!el || el.value) return;
+  const guess = guessPensionProduct(val('f_name'));
+  if (!guess) return;
+  el.value = guess;
+  el.dataset.auto = guess;
 }
 function symHint(src, cat) {
   if (cat === '원자재' && src === 'twelvedata') return '국제 금 시세(XAU/USD, 트로이온스당 달러)를 가져와 환율로 원/그램으로 환산해요. 무료 요금제에서는 상품(commodity) 시세가 안 나올 수 있어요 — 그럴 땐 "직접 입력"을 이용하세요.';
@@ -2097,7 +2205,7 @@ function snapForm(m) {
   const T = totals();
   const html = `
     <p class="hand muted" style="margin:0 4px 12px">${Number(m.slice(5))}월의 나에게 한 줄 남기기 ✍️</p>
-    <div class="field"><span>이번 달 기분은?</span><div class="moods" id="moodPick">${MOODS.map(x => `<button type="button" class="${x === mood ? 'on' : ''}" data-mood="${x}" aria-label="${MOOD_LABEL[x]}">${mg(MOOD_MG[x], 'mg-mood')}<small>${MOOD_LABEL[x]}</small></button>`).join('')}</div></div>
+    <div class="field"><span>이번 달 기분은?</span><div class="moods" id="moodPick">${MOODS.map(x => `<button type="button" class="emo ${x === mood ? 'on' : ''}" data-mood="${x}">${x}</button>`).join('')}</div></div>
     <label class="field"><span>한 줄 일기</span><textarea class="input" id="s_note" rows="3" maxlength="140" placeholder="예) 보너스 받아서 S&P500 더 샀다! 🎉">${esc(ex.note || '')}</textarea></label>
     <div class="banner">${E('📸')}<span>${isCur ? `지금 총자산 <b class="num">${won(T.value)}</b>이 이번 달 기록으로 저장돼요.${ex.month ? ' (이미 쓴 기록은 새 값으로 바뀌어요)' : ''}` : `이 달의 기록 <b class="num">${won(ex.total || 0)}</b> · 기분과 메모만 고칠 수 있어요.`}</span></div>
     ${ex.month ? `<button class="btn danger block" data-action="del-snap" data-m="${m}">🗑️ 이 일기 지우기</button>` : ''}`;
@@ -2107,7 +2215,7 @@ function snapForm(m) {
       S.snapshots = S.snapshots.filter(x => x.month !== m);
       S.snapshots.push({ month: m, total: Math.round(T.value), cost: Math.round(T.cost), byCat: T.byCat, byPurpose: T.byPurpose, savedAt: new Date().toISOString(), mood, note });
     } else { Object.assign(S.snapshots.find(x => x.month === m), { mood, note, auto: false }); }
-    save(); render(); toast(`${Number(m.slice(5))}월 일기를 저장했어요 (${MOOD_LABEL[mood] || '기록'})`);
+    save(); render(); toast(`${mood} ${Number(m.slice(5))}월 일기를 저장했어요`);
   });
   $sheetBody.querySelector('#moodPick').addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return; mood = b.dataset.mood;
@@ -2287,7 +2395,7 @@ let appUnlocked = false;
 function renderLockScreen() {
   const ls = document.getElementById('lockScreen');
   ls.innerHTML = `<div class="lock-card">
-    <div style="text-align:center">${mg('mascot_main', 'lock-mg', '몽글이')}</div>
+    <div class="big-emo emo" style="font-size:48px;text-align:center;display:block">🔒</div>
     <h2 style="text-align:center;margin:8px 0 4px">잠겨 있어요</h2>
     <p class="small muted" style="text-align:center;margin:0 0 16px">PIN을 입력해서 열어 주세요</p>
     <input class="input" id="lockPin" type="password" inputmode="numeric" maxlength="6" placeholder="PIN" style="text-align:center;font-size:22px;letter-spacing:8px">
@@ -2458,7 +2566,8 @@ document.addEventListener('click', e => {
       S.settings.targets = next; ui.gapRelative = false; save(); render(); toast('목표 비중을 보유 자산 기준으로 바꿨어요 🎯'); break;
     }
     case 'gap-relative': ui.gapRelative = !ui.gapRelative; render(); break;
-    case 'subchart-view': ui.subChartView[el.dataset.cat] = el.dataset.v; render(); break;
+    case 'comp-toggle': ui.compOpen[el.dataset.cat] = !ui.compOpen[el.dataset.cat]; render(); break;
+    case 'comp-tab': ui.compTab[el.dataset.cat] = el.dataset.k; render(); break;
     case 'theme': S.settings.theme = el.dataset.v; save(); render(); break;
     case 'save-api': S.settings.twelveKey = document.getElementById('twelveKey').value.trim(); S.settings.fxManual = num(document.getElementById('fxManual').value); S.settings.claudeKey = document.getElementById('claudeKey').value.trim(); S.settings.claudeModel = document.getElementById('claudeModel').value.trim() || DEFAULT_MODEL; save(); render(); toast('저장했어요 ✨'); break;
     case 'export': exportBackup(); break;
