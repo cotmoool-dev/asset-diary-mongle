@@ -18,7 +18,7 @@
 const STORE_KEY = 'myAssets.mongle';
 /* 몽글이버전을 처음 열면 같은 주소에 있던 테스트버전 데이터를 복사해 옴(테스트버전 쪽은 그대로 둠) */
 const LEGACY_STORE_KEYS = ['myAssets.v4.test'];
-const APP_BUILD = 'v1.4.0'; // sw.js의 CACHE 버전과 항상 맞춰서 올릴 것 — 설정 화면에 그대로 노출해서, 실제 폰에 반영된 버전을 화면 캡처 하나로 바로 확인할 수 있게 함
+const APP_BUILD = 'v1.5.0'; // sw.js의 CACHE 버전과 항상 맞춰서 올릴 것 — 설정 화면에 그대로 노출해서, 실제 폰에 반영된 버전을 화면 캡처 하나로 바로 확인할 수 있게 함
 const APP_VERSION_LABEL = '자산일기 몽글이버전';
 /* ───────── 몽글이 이모티콘 (다른 파일들과 같은 위치의 *.png, 투명 배경 스티커) ───────── */
 const MG_DIR = ''; // GitHub 모바일 업로드에서 폴더 구조가 깨지는 사고가 반복되어, 하위 폴더 없이 전부 루트에 두는 구조로 통일
@@ -591,7 +591,7 @@ function asOfLine(extra = '') {
     ? `마지막 시세 새로고침 ${new Date(S.settings.priceRefreshedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}`
     : '마지막 시세 새로고침: 아직 실행 안 함 · 지금은 직접 입력한 값 기준';
   const parts = [`⏱️ 화면 계산 ${nowStamp()}`, pr, fx, extra].filter(Boolean);
-  return `<p class="small faint asof" style="margin:0 4px 10px">${parts.join(' · ')}</p>`;
+  return `<p class="small faint asof" style="margin:0 0 12px">${parts.join(' · ')}</p>`;
 }
 /* 외화 금액을 "현지통화 + 원화환산" 형식으로 표기 */
 function dualCur(amountLocal, cur) {
