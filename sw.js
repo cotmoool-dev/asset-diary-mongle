@@ -6,7 +6,7 @@
  * Unauthorized copying, modification, redistribution, or commercial use is prohibited.
  */
 // 앱 화면 파일과 글꼴을 캐시해서 오프라인에서도 열리게 함. 시세 API는 캐시하지 않음.
-const CACHE = 'asset-diary-mongle-v1.3.0';
+const CACHE = 'asset-diary-mongle-v1.4.0';
 // 같은 GitHub 계정(같은 주소)에 올린 다른 버전 앱의 캐시를 지우지 않도록, 이 앱 이름으로 시작하는 옛 캐시만 정리
 const CACHE_PREFIX = 'asset-diary-mongle-';
 const SHELL = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest',
